@@ -1,8 +1,8 @@
-#ifndef _CONSTRUCT_H_
-#define _CONSTRUCT_H_
+#ifndef _TINYSTL_CONSTRUCT_H_
+#define _TINYSTL_CONSTRUCT_H_
 
 #include <new>
-#include "TypeTraits.h"
+#include "tinystl_type_traits.h"
 
 
 namespace TinySTL{
