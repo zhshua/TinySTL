@@ -4,7 +4,6 @@
 #include <new>
 #include "TypeTraits.h"
 
-//暂时缺少引入萃取剂头文件
 namespace TinySTL{
     template<class T1, class T2>
     inline void construct(T1* ptr, const T2& value){
