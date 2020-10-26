@@ -1,7 +1,8 @@
 #ifndef _CONSTRUCT_H_
 #define _CONSTRUCT_H_
 
-#include <new.h>
+#include <new>
+#include "TypeTraits.h"
 
 //暂时缺少引入萃取剂头文件
 namespace TinySTL{
