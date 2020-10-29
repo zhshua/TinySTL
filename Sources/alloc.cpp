@@ -39,4 +39,12 @@ namespace TinySTL{
         q->next = *my_free_list;
         *my_free_list = q;
     }
+
+    void *Alloc::reallocate(void* ptr, size_t old_sz, size_t new_sz){
+        // 释放掉原有的旧内存
+        dellocate(ptr, old_sz);
+        // 重新申请一块新的大小
+        ptr = allocate(new_sz);
+        return ptr;
+    }
 }
