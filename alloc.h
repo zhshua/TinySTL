@@ -1,7 +1,7 @@
 #ifndef _ALLOC_H_
 #define _ALLOC_H_
 
-#include <cstddef>
+#include <cstdlib>
 
 namespace TinySTL{
     class Alloc{
@@ -35,7 +35,7 @@ namespace TinySTL{
         static void *refill(size_t n);
     public:
         static void *allocate(size_t bytes);
-        static void *dellocate(void *ptr, size_t bytes);
+        static void dellocate(void *ptr, size_t bytes);
         static void *reallocate(void *ptr, size_t old_sz, size_t new_sz);
     };
 }
