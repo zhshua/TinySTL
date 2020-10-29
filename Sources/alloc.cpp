@@ -33,7 +33,9 @@ namespace TinySTL{
         }
         obj **my_free_list;
         obj *q = (obj *)ptr;
+        // 找到对应的my_free_list
         my_free_list = free_list + FREELIST_INDEX(bytes);
+        // 调整指针进行回收, 这一步可以看作是在链表my_free_list头部插入一个节点ptr
         q->next = *my_free_list;
         *my_free_list = q;
     }
