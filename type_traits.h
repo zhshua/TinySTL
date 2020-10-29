@@ -1,5 +1,5 @@
-#ifndef _TINYSTL_TYPE_TRAITS_H_
-#define _TINYSTL_TYPE_TRAITS_H_
+#ifndef _TYPE_TRAITS_H_
+#define _TYPE_TRAITS_H_
 
 namespace TinySTL{
     struct _false_type {};

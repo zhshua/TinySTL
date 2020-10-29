@@ -1,8 +1,8 @@
-#ifndef _TINYSTL_UNINITIALIZED_H
-#define _TINYSTL_UNINITIALIZED_H
+#ifndef _UNINITIALIZED_H_
+#define _UNINITIALIZED_H_
 
-#include "tinystl_type_traits.h"
-#include "tinystl_construct.h"
+#include "type_traits.h"
+#include "construct.h"
 
 namespace TinySTL{
 
