@@ -1,5 +1,5 @@
 #ifndef _ALLOCATOR_H_
-#define _ALLOCATOR_H
+#define _ALLOCATOR_H_
 
 #include "alloc.h"
 
@@ -22,11 +22,12 @@ namespace TinySTL{
         static T *allocate(){
             return (T *)Alloc::allocate(sizeof(T));
         }
-        static T *dellocate(T *ptr, size_t n){
-            return 0 == n ? 0 : (T *)Alloc::dellocate(ptr, n * sizeof(T));
+        static void deallocate(T *ptr, size_t n){
+            if(n != 0)
+                Alloc::deallocate(ptr, n * sizeof(T));
         }
-        static T *dellocate(T *ptr){
-            return (T *)Alloc::dellocate(ptr, sizeof(T));
+        static void deallocate(T *ptr){
+            Alloc::deallocate(ptr, sizeof(T));
         }
     };
 }

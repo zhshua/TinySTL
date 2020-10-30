@@ -28,7 +28,7 @@ namespace TinySTL{
     }
 
     //  此函数用于释放内存
-    void Alloc::dellocate(void *ptr, size_t bytes){
+    void Alloc::deallocate(void *ptr, size_t bytes){
         // 超过128字节,则交给free释放
         if(bytes > __MAX_BYTES){
             return free(ptr);
@@ -45,7 +45,7 @@ namespace TinySTL{
     // 此函数用于追加内存
     void *Alloc::reallocate(void* ptr, size_t old_sz, size_t new_sz){
         // 释放掉原有的旧内存
-        dellocate(ptr, old_sz);
+        deallocate(ptr, old_sz);
         // 重新申请一块新的大小
         ptr = allocate(new_sz);
         return ptr;
