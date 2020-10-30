@@ -30,7 +30,7 @@ namespace TinySTL{
             return (((bytes) + __ALIGN - 1) & ~(__ALIGN - 1)); // 暂时我还不知道为什么这样进行逻辑运算
         }
         // 这个函数主要用来从内存池中取空间给free_list
-        static char *chunk_alloc(size_t size, int &nobj);
+        static char *chunk_alloc(size_t size, int &nobjs);
         // 这个函数主要用来切割由chunk_alloc得到的大区块，并且把第一个区块返回给客户端
         static void *refill(size_t n);
     public:
