@@ -21,6 +21,7 @@ namespace TinySTL{
         typedef Alloc data_alloctor;
         void insert_aux(iterator position, const T &x); // 在pos位置上插入值x
         void insert(iterator position, size_type n, const T &x); // 从位置pos开始插入n个初值为x的元素
+        void insert(iterator position, const T &x);// 在位置pos上插入元素x
         void deallocate(){
             if(start)
                 data_alloctor::deallocate(start, end_of_storage - start);// 释放空间
@@ -136,8 +137,65 @@ namespace TinySTL{
     // 从位置pos开始插入n个初值为x的元素
     template <class T, class Alloc>
     void vector<T, Alloc>::insert(iterator position, size_type n, const T&x){
+        if(n != 0){
+            if(size_type(end_of_storage - finish) >= n){ // 备用空间大于新增元素个数
+                const size_type elems_after = finish - position; // 计算插入点之后现有的元素
+                iterator old_finish = finish;
+                if(elems_after > n){ // 插入点之后的元素大于要插入的元素个数
+                    uninitialized_copy(finish - n, finish, finish);
+                    finish += n;
+                    copy_backward(position, old_finish - n, old_finish);
+                    fill(position, position + n, x); // fill是algorithm里的函数
+                }
+                else{
+                    // 插入点之后的元素个数小于要插入的元素个数
+                    uninitialized_fill_n(finish, n - elems_after, x);
+                    finish += n - elems_after;
+                    uninitialized_copy(position, old_finish, finish);
+                    finish += elems_after;
+                    fill(position, old_finish, x); // fill是algorithm里的函数
+                }
+            }
+            else{
+                // 备用空间小于新增元素个数,得重新申请更大的空间
+                // 新长度是旧长度的两倍,或者是旧长度 + 新增元素个数
+                const size_type old_size = size();
+                const size_type len = old_size + max(old_size, n);
 
+                // 配置新空间
+                iterator new_start = data_alloctor::allocate(len);
+                iterator new_finish = new_start;
+                // 先将插入点之前的元素复制过来
+                new_finish = uninitialized_copy(start, position, new_start);
+                // 再在插入点插入元素
+                new_finish = uninitialized_fill_n(new_finish, n, x);
+                // 再把插入点之后的元素复制过来
+                new_finish = uninitialized_copy(position, new_finish, new_finish);
+
+                // 析构并释放原vector
+                destory(begin(), end());
+                deallocate();
+
+                // 以下调整新vector的标记
+                start = new_start;
+                finish = new_finish;
+                end_of_storage = finish + len;
+            }
+
+        }
+    }
+
+    // 在位置pos上插入元素x
+    template <class T,class Alloc>
+    void vector<T, Alloc>::insert(iterator position, const T &x){
+        // 如果要插入的元素在末尾
+        if(finish != end_of_storage && position == end()){
+            construct(end(), x);
+            ++finish;
+        }
+        else{
+            insert_aux(position, x); // 要插入的元素在中间位置,调用insert_aux函数进行插入
+        }
     }
 }
-
 #endif
