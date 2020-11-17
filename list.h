@@ -134,7 +134,7 @@ namespace TinySTL{
         }
 
     public:
-        iterator begin() { return (link_type)((*node).next); }
+        iterator begin() { return (link_type)(node->next); }
         iterator end() { return node; } // 左闭右开原则,因此返回node而不是node前面的
         bool empty() { return node->next == node; }
         size_type size() const{
@@ -156,21 +156,37 @@ namespace TinySTL{
         void clear();
 
         // 将数值为value的所有元素移除
-        void remobe(const T &value);
+        void remove(const T &value);
 
         // 移除数值相同的连续元素, 只有连续相同的元素，才会被移除只剩下一个
         void unique();
 
         // 将x接合到pos所指的位置之前, x必须不同于*this
-        void splice(iterator position, list &x);
+        void splice(iterator position, list &x){
+            if(!x.empty())
+                transfer(poisition, x.begin(), x.end());
+        }
         // 将i所指的元素接合到pos所指的位置之前,pos和i可指向同一个list
-        void splice(iterator position, list &, iterator i);
+        void splice(iterator position, list &, iterator i){
+            iterator j = i;
+            ++j;
+            // 如果pos和i是同一个位置或者i已经在pos前一个位置了
+            if(poisition == i || position == j)
+                return;
+            transfer(position, i, j);
+        }
         // 将[first, last)内的所有元素接合到pos所指的位置之前
         // pos和[first,last)可指向同一个list,但pos不能位于[first,last)之内
-        void splice(iterator position, list &, iterator first, iterator last);
+        void splice(iterator position, list &, iterator first, iterator last){
+            if(first != last)
+                transfer(position, first, last);
+        }
+
+        // 交换链表x和*this
+        void swap(list &x) { TinySTL::swap(node, x.node); }
 
         // merge()将x合并到*this身上,两个lists的内容都必须递增有序
-        void merge(list<T, Alloc> &x);
+        void merge(list &x);
 
         // reverse()将*this的内容逆向重置
         void reverse();
@@ -185,6 +201,116 @@ namespace TinySTL{
             put_node(node);
         }
     };
+
+    // *******************以下为list类中一些模板的实现*******************
+    // 全局函数交换链表x和y
+    template <class T, class Alloc>
+    void swap(list<T, Alloc>& x, list<T, Alloc>& y){
+        return x.swap(y);
+    }
+    // 清除整个链表
+    template <class T, class Alloc>
+    void list<T, Alloc>::clear(){
+        link_type cur = (link_type)node->next; // cur指向begin()
+        while (cur != node){
+            link_type tmp = cur;
+            cur = (link_type) cur->next;
+            destory_node(tmp); // tmp本身就是个指针,存储的本身就是地址,因此不用加&
+        }
+        // 恢复node的初始状态
+        node->prev = node;
+        node->next = node;
+    }
+
+    // 将数值为value的所有元素移除
+    template<class T, class Alloc>
+    void list<T, Alloc>::remove(const T &value){
+        for (auto it = begin(); it != end();){
+            if(*it = value)
+                it = erase(it);
+            else
+                ++it;
+        }
+    }
+
+    // 移除数值相同的连续元素, 只有连续相同的元素,才会被移除只剩下一个
+    template<class T, class Alloc>
+    void list<T, Alloc>::unique(){
+        for (auto it = begin(); it+1 != end();){
+            iterator next_it = it + 1;
+            if(*it == *next_it)
+                it = erase(it);
+            else
+                ++it;
+        }
+    }
+
+    // merge()将x合并到*this身上,两个lists的内容都必须递增有序
+    template <class T, class Alloc>
+    void list<T, Alloc>::merge(list<T, Alloc> &x){
+        // *this链表的首尾
+        iterator first1 = begin();
+        iterator last1 = end();
+        // 待插入链表的首尾
+        iterator first2 = x.begin();
+        iterator last2 = x.end();
+
+        while(first1 != last1 && first2 != last2){
+            if(*first1 > *first2){
+                iterator next = first2; // 暂存first2节点,因为经过transfer后first2位置会变
+                ++first2;
+                transfer(first1, next, first2);
+            }
+            else
+                ++first1;
+        }
+        // 待插入链表没走到头,说明后面的元素都比*this大
+        if(first2 != last2)
+            transfer(last1, first2, last2);
+    }
+
+    // reverse()将*this的内容逆向重置
+    template <class T, class Alloc>
+    void list<T, Alloc>::reverse(){
+        if(size() == 0 || size() == 1)
+            return;
+        iterator first = begin() + 1;
+        while(first != end()){
+            iterator old = first; // 必须要这样暂存first指向的节点,因为经过transfer后first会边
+            ++first;
+            transfer(begin(), old, first);
+        }
+    }
+
+    // list不能使用STL算法sort(), 必须使用自己的sort()成员函数
+    // 因为STL的sort()算法只接受RamdonAccessIterator
+    // 本函数采用快排
+    // 目前还不能理解这个sort为什么这么写,回头好好看看
+    template <class T, class Alloc>
+    void list<T, Alloc>::sort(){
+        // 如果是1个元素或者0个元素,直接return
+        if(size() == 0 || size() == 1)
+            return;
+
+        list<T, Alloc> carry;
+        list<T, Alloc> counter[64];
+        int fill = 0;
+        while(!empty()){
+            carry.splice(carry.begin(), *this, begin());
+            int i = 0;
+            while(i < fill && !counter[i].empty()){
+                counter[i].merge(carry);
+                carry.swap(counter[i++]);
+            }
+            carry.swap(counter[i]);
+            if(i == fill)
+                ++fill;
+        }
+        for (int i = 1; i < fill;++i)
+            counter[i].merage(counter[i - 1]);
+        swap(counter[fill - 1]);
+    }
+    
 }
 
 #endif
