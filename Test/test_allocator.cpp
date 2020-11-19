@@ -10,6 +10,6 @@ int main()
     vector<int, TinySTL::allocator<int>> v;
     for (int i = 0; i < 10000000;++i)
         v.push_back(i);
-    cout << sizeof(v);
+    cout << v.capacity();
     return 0;
 }

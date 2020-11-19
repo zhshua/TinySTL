@@ -2,16 +2,17 @@
 #define _ALGORITHM_H_
 #include <string.h>
 #include "type_traits.h"
+#include "iterator.h"
 
 namespace TinySTL{
     // *************[copy]的相关函数*************
     template <class InputIterator, class OutputIterator>
-    inline OutputIterator _copy(InputIterator first, InputIterator last, OutputIterator result, _true_type){
+    inline OutputIterator __copy(InputIterator first, InputIterator last, OutputIterator result, _true_type){
         memmove(result, first, sizeof(*first) * (last - first));
         return result + (last - first);
     }
     template <class InputIterator, class OutputIterator>
-    inline OutputIterator _copy(InputIterator first, InputIterator last, OutputIterator result, _false_type){
+    inline OutputIterator __copy(InputIterator first, InputIterator last, OutputIterator result, _false_type){
         for (; first != last; ++result, ++first)
             *result = *first;
         return result;
@@ -45,6 +46,35 @@ namespace TinySTL{
         for (; first != last; --result, --last)
             *result = *last;
         return result - (last - first);
+    }
+
+    // ***********[max]、[min]****************
+    template <class T>
+    inline T max(T a, T b){
+        return a > b;
+    }
+
+    template <class T>
+    inline T min(T a, T b){
+        return a < b;
+    }
+
+    // ********[fill]、[fill_n]*********************
+    // 将区间[first, last)以元素value填充
+    template <class ForwardIterator, class T>
+    void fill(ForwardIterator first, ForwardIterator last, const T& value){
+        for (; first != last; ++first)
+            *first = value;
+    }
+    // 以first为起始位置填充n个value,返回填充后最后一个元素的下一个位置
+    template <class ForwardIterator, class Size, class T>
+    ForwardIterator fill_n(ForwardIterator first, Size n, const T& value){
+        while(n > 0){
+            *first = value;
+            ++first;
+            --n;
+        }
+        return first;
     }
 }
 #endif

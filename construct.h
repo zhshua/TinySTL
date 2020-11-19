@@ -34,7 +34,7 @@ namespace TinySTL{
     //destory的重载版本，释放区间[first, last)的内存
     template<class ForwardIterator>
     inline void destory(ForwardIterator first, ForwardIterator last){
-        typedef typename __type_traits<ForwardIterator>::is_POD_type is_POD;
+        typedef typename _type_traits<ForwardIterator>::is_POD_type is_POD;
         __destory(first, last, is_POD());   // 判断迭代器类型是否为POD型(也就是标量型别或传统的C struct型别)
                                             // POD型别的有自己的构造析构函数，我们什么都不用做
     }

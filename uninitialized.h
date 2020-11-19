@@ -3,6 +3,7 @@
 
 #include "type_traits.h"
 #include "construct.h"
+#include "algorithm.h"
 
 namespace TinySTL{
 
@@ -87,9 +88,9 @@ namespace TinySTL{
      * x表示初值
      */
     template <class ForwardIterator, class Size, class T>
-    inline void uninitialized_fill_n(ForwardIterator first, Size n, const T& x){
+    inline ForwardIterator uninitialized_fill_n(ForwardIterator first, Size n, const T& x){
         typedef typename _type_traits<ForwardIterator>::is_POD_type is_POD;
-        __uninitialized_fill_n_aux(first, n, x, is_POD());
+        return __uninitialized_fill_n_aux(first, n, x, is_POD());
     }
 
 }

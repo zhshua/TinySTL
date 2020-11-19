@@ -62,11 +62,11 @@ namespace TinySTL{
         // 下面过程是把得到的大区块切割成nobjs个大小为n的小区块
         obj *result = (obj*)chunk; //第一个小区块是要返回给客户端使用的, 暂存一下地址
         obj **my_free_list;
+        obj *cur_obj, *next_obj;
         // 求出在free_list内的标号
         my_free_list = free_list + FREELIST_INDEX(n);
-        *my_free_list = result->next; //由于第一块是要返回给客户端的,因此*my_free_list里存的是下一块的地址
+        *my_free_list = next_obj = (obj *)(chunk + n); //由于第一块是要返回给客户端的,因此*my_free_list里存的是下一块的地址
 
-        obj *cur_obj, *next_obj;
         for (int i = 1; ;++i){ // 从1开始切割,因为第0号区块是分配给客户端的
             cur_obj = next_obj;
             next_obj = (obj *)((char *)next_obj + n); // 每个切割的区块大小为n

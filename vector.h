@@ -20,15 +20,13 @@ namespace TinySTL{
         iterator finish; // 表示目前使用的空间的尾
         iterator end_of_storage; //表示目前可用的空间的尾
         typedef Alloc data_alloctor;
-        void insert_aux(iterator position, const T &x); // 在pos位置上插入值x
-        void insert(iterator position, size_type n, const T &x); // 从位置pos开始插入n个初值为x的元素
-        void insert(iterator position, const T &x);// 在位置pos上插入元素x
+        
         void deallocate(){
             if(start)
                 data_alloctor::deallocate(start, end_of_storage - start);// 释放空间
         }
         iterator allocate_and_fill(size_type n, const T& value){
-            iterator result = data_alloctor::allocator(n); // 分配n个空间
+            iterator result = data_alloctor::allocate(n); // 分配n个空间
             uninitialized_fill_n(result, n, value); // 全局函数,给区间[result, result+n)填充n个值为value的元素
             return result;
         }
@@ -41,12 +39,12 @@ namespace TinySTL{
     public:
         iterator begin() { return start; }
         iterator end() { return finish; }
-        size_type size() const { return size_type(end() - begin()); }
-        size_type capacity const { return size_type(end_of_storage - begin()); }
-        bool empty() const { return begin() == end(); }
+        size_type size() const { return size_type(finish - start); }
+        size_type capacity() const { return size_type(end_of_storage - start); }
+        bool empty() const { return start == finish; }
         reference operator[](size_type n) { return *(begin() + n); }
-        reference front() const { return *(begin()); }
-        reference back() const { return *(end() - 1); }
+        reference front() const { return *start; }
+        reference back() const { return *(finish - 1); }
 
         vector() : start(nullptr), finish(nullptr), end_of_storage(nullptr){}
         vector(size_type n, const T &value) { fill_initialize(n, value); }
@@ -57,6 +55,10 @@ namespace TinySTL{
             destory(start, finish); // destory只析构对象,而不负责释放申请的空间
             deallocate(); // deallocate只负责释放申请的空间,而不负责析构对象
         }
+
+        void insert_aux(iterator position, const T &x); // 在pos位置上插入值x
+        void insert(iterator position, size_type n, const T &x); // 从位置pos开始插入n个初值为x的元素
+        void insert(iterator position, const T &x);// 在位置pos上插入元素x
 
         void push_back(const T& x){
             if(finish != end_of_storage){ // 查看之前分配的空间是否已经用完了
@@ -94,7 +96,7 @@ namespace TinySTL{
             if(new_size < size())
                 erase(begin() + new_size, end());
             else
-                insert(end(), new_size() - size(), x);
+                insert(end(), new_size - size(), x);
         }
         void resize(size_type new_size) { resize(new_size, T()); }
         void clear() { erase(begin(), end()); }
@@ -137,7 +139,7 @@ namespace TinySTL{
 
     // 从位置pos开始插入n个初值为x的元素
     template <class T, class Alloc>
-    void vector<T, Alloc>::insert(iterator position, size_type n, const T&x){
+    void vector<T, Alloc>::insert(iterator position, size_type n, const T& x){
         if(n != 0){
             if(size_type(end_of_storage - finish) >= n){ // 备用空间大于新增元素个数
                 const size_type elems_after = finish - position; // 计算插入点之后现有的元素
@@ -171,7 +173,7 @@ namespace TinySTL{
                 // 再在插入点插入元素
                 new_finish = uninitialized_fill_n(new_finish, n, x);
                 // 再把插入点之后的元素复制过来
-                new_finish = uninitialized_copy(position, new_finish, new_finish);
+                new_finish = uninitialized_copy(position, finish, new_finish);
 
                 // 析构并释放原vector
                 destory(begin(), end());
