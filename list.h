@@ -3,6 +3,7 @@
 
 #include "iterator.h"
 #include "allocator.h"
+#include "construct.h"
 namespace TinySTL{
     // 定义list的节点结构体类型
     template <class T>
@@ -77,7 +78,17 @@ namespace TinySTL{
         typedef Alloc list_node_allocator; // 专属的配置空间
 
     public:
-        typedef list_node* link_type;
+        typedef T               value_type;
+        typedef T*              pointer;
+        typedef const T*        const_pointer;
+        typedef T&              reference;
+        typedef const T&        const_reference;
+        typedef size_t          size_type;
+        typedef ptrdiff_t       difference_type;
+        typedef list_node*      link_type;
+    public:
+        typedef __list_iterator<T, T&, T*>                  iterator;
+        typedef __list_iterator<T, const T&, const T*>      const_iterator;
     protected:
         // 配置一个节点
         link_type get_node() { return list_node_allocator::allocate(); }
@@ -107,7 +118,7 @@ namespace TinySTL{
             link_type tmp = create_node(x);
             tmp->next = position.node;
             tmp->prev = position.node->prev;
-            (link_type)(position.node->prev)->next = tmp;
+            ((link_type)(position.node->prev))->next = tmp;
             position.node->prev = tmp;
             return tmp;
         }
@@ -117,16 +128,16 @@ namespace TinySTL{
             link_type next_node = link_type(position.node->next);
             link_type prev_node = link_type(position.node->prev);
             prev_node->next = next_node;
-            next_node_prev = prev_node;
+            next_node->prev = prev_node;
             destory_node(position.node);
             return next_node;
         }
 
         // 将[first, last)内的所有元素移动到pos之前
         void transfer(iterator position, iterator first, iterator last){
-            (link_type)(last.node->prev)->next = position.node;
-            (link_type)(first.node->prev)->next = last.node;
-            (link_type)(position.node->prev)->next = first.node;
+            ((link_type)(last.node->prev))->next = position.node;
+            ((link_type)(first.node->prev))->next = last.node;
+            ((link_type)(position.node->prev))->next = first.node;
             link_type tmp = (link_type)(position.node->prev);
             position.node->prev = last.node->prev;
             last.node->prev = first.node->prev;
@@ -137,7 +148,7 @@ namespace TinySTL{
         iterator begin() { return (link_type)(node->next); }
         iterator end() { return node; } // 左闭右开原则,因此返回node而不是node前面的
         bool empty() { return node->next == node; }
-        size_type size() const{
+        size_type size() {
             size_type result = 0;
             for (auto i = begin(); i != end();++i)
                 ++result;
@@ -164,14 +175,14 @@ namespace TinySTL{
         // 将x接合到pos所指的位置之前, x必须不同于*this
         void splice(iterator position, list &x){
             if(!x.empty())
-                transfer(poisition, x.begin(), x.end());
+                transfer(position, x.begin(), x.end());
         }
         // 将i所指的元素接合到pos所指的位置之前,pos和i可指向同一个list
         void splice(iterator position, list &, iterator i){
             iterator j = i;
             ++j;
             // 如果pos和i是同一个位置或者i已经在pos前一个位置了
-            if(poisition == i || position == j)
+            if(position == i || position == j)
                 return;
             transfer(position, i, j);
         }
@@ -183,7 +194,11 @@ namespace TinySTL{
         }
 
         // 交换链表x和*this
-        void swap(list &x) { TinySTL::swap(node, x.node); }
+        void swap(list &x) {
+            auto temp = node;
+            node = x.node;
+            x.node = temp;
+        }
 
         // merge()将x合并到*this身上,两个lists的内容都必须递增有序
         void merge(list &x);
@@ -206,7 +221,7 @@ namespace TinySTL{
     // 全局函数交换链表x和y
     template <class T, class Alloc>
     void swap(list<T, Alloc>& x, list<T, Alloc>& y){
-        return x.swap(y);
+        x.swap(y);
     }
     // 清除整个链表
     template <class T, class Alloc>

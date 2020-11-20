@@ -24,10 +24,10 @@ namespace TinySTL{
         }
         static void deallocate(T *ptr, size_t n){
             if(n != 0)
-                Alloc::deallocate(ptr, n * sizeof(T));
+                Alloc::deallocate(static_cast<void *>(ptr), n * sizeof(T));
         }
         static void deallocate(T *ptr){
-            Alloc::deallocate(ptr, sizeof(T));
+            Alloc::deallocate(static_cast<void *>(ptr), sizeof(T));
         }
     };
 }
